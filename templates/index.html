@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flower Classification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $('form').submit(function(event){
+                event.preventDefault(); // Prevent the form from submitting normally
+                $.ajax({
+                    type: 'POST',
+                    url: '/predict',
+                    data: $('form').serialize(), // Serialize the form data
+                    success: function(response){
+                        console.log(response); // Debug: Log the response to the console
+                        if (response.result !== undefined) {
+                            // Update the content of the span with the corresponding flower species
+                            var flowerSpecies = '';
+                            switch (response.result) {
+                                case 0:
+                                    flowerSpecies = 'Setosa';
+                                    break;
+                                case 1:
+                                    flowerSpecies = 'Versicolor';
+                                    break;
+                                case 2:
+                                    flowerSpecies = 'Virginica';
+                                    break;
+                                default:
+                                    flowerSpecies = 'Unknown';
+                            }
+                            $('#result').html(flowerSpecies);
+                        } else {
+                            $('.loading-class').html('Error: Unexpected response format'); // Display error message
+                        }
+                    },
+                    error: function(error){
+                        console.log(error); // Debug: Log the error to the console
+                        $('.loading-class').html('Error: ' + error.responseJSON.error); // Display error message
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Flower Classification</h1>
+    </header>
+
+    <main>
+        <form action="/predict" method="post">
+            <div class="input-group">
+                <label for="sepal_length">Sepal Length:</label>
+                <input type="text" id="sepal_length" name="sepal_length" required>
+                <label for="sepal_width">Sepal Width:</label>
+                <input type="text" id="sepal_width" name="sepal_width" required>
+            </div>
+
+            <div class="input-group">
+                <label for="petal_length">Petal Length:</label>
+                <input type="text" id="petal_length" name="petal_length" required>
+                <label for="petal_width">Petal Width:</label>
+                <input type="text" id="petal_width" name="petal_width" required>
+            </div>
+
+            <button type="submit">Classify Flower</button>
+        </form>
+
+        <div class="prediction-result">
+            <h1>Flower Species: <span id="result">---</span></h1>
+            <!-- You can add an image here -->
+        </div>
+    </main>
+</body>
+</html>
